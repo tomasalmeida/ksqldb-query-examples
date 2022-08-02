@@ -23,7 +23,7 @@ EMIT CHANGES;
 -- create a stream joining the stream with a table
 -- get the value based on key and the latest value
 -- and insert in another stream
-CREATE STREAM max_values AS
+CREATE STREAM stream_latest_value AS
   SELECT 
     s.key as key, 
     s.value
@@ -36,16 +36,16 @@ CREATE STREAM max_values AS
 EMIT CHANGES;
  
 -- create another table to materialise the results
-CREATE TABLE max_values_table AS
+CREATE TABLE values_table AS
 SELECT 
    key, 
-   LATEST_BY_OFFSET(value)
-FROM max_values 
+   LATEST_BY_OFFSET(value) AS value
+FROM stream_latest_value 
 GROUP BY key
 EMIT CHANGES;
  
 -- get the table updates 
-SELECT * FROM max_values_table EMIT CHANGES;
+SELECT * FROM values_table EMIT CHANGES;
 
 -- in another ksql cli insert values and observe the values
 INSERT INTO stream_input VALUES (1, 'ONE',           '2022-08-01T10:00');
