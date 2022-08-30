@@ -22,15 +22,6 @@ CREATE STREAM stream_b(
  partitions = 1
 );
 
-
--- input data
-INSERT INTO stream_a VALUES ('v1', 'v1');
-INSERT INTO stream_b VALUES ('v1', 'v1', 'v1-c', 'v1-d');
-INSERT INTO stream_a VALUES ('v2', 'v2');
-INSERT INTO stream_a VALUES ('v3', 'v3');
-INSERT INTO stream_b VALUES ('v2', 'v2', 'v2-c', 'v2-d');
-INSERT INTO stream_b VALUES ('v4', 'v4', 'v4-c', 'v4-d');
-
 -- create another stream with key concatenated
 CREATE STREAM stream_a_concat AS
  SELECT
@@ -60,26 +51,51 @@ CREATE STREAM stream_b_key AS
 
 
 -- join the result
-CREATE STREAM stream_final AS
-SELECT 
+CREATE STREAM stream_final_null AS
+  SELECT 
     ak.a_key,
     ak.value1,
     ak.value2,
     bk.value3,
     bk.value4
   FROM stream_a_key ak
-    INNER JOIN stream_b_key bk
+    LEFT JOIN stream_b_key bk
       WITHIN 30 DAYS
-      GRACE PERIOD 1 DAY
       ON ak.a_key = bk.b_key;
 
+CREATE STREAM stream_final_not_null AS
+  SELECT 
+    ak.a_key,
+    ak.value1,
+    ak.value2,
+    bk.value3,
+    bk.value4
+  FROM stream_a_key ak
+    LEFT OUTER JOIN stream_b_key bk
+      WITHIN 30 DAYS
+      -- GRACE PERIOD 1 DAYS
+      ON ak.a_key = bk.b_key
+  WHERE
+    bk.value3 is not null;
 
--- CHECK the result
-SELECT * FROM stream_final EMIT CHANGES;
 
--- In another ksql cli add more data
-INSERT INTO stream_a VALUES ('v5', 'v5');
+-- In another ksql cli checks the other stream
+SET 'auto.offset.reset' = 'earliest';
+SELECT * FROM stream_final_null EMIT CHANGES;
+
+-- In another ksql cli checks the other stream
+SET 'auto.offset.reset' = 'earliest';
+SELECT * FROM stream_final_not_null EMIT CHANGES;
+
+-- input data
+INSERT INTO stream_a VALUES ('v1', 'v1');
+INSERT INTO stream_b VALUES ('v1', 'v1', 'v1-c', 'v1-d');
+INSERT INTO stream_b VALUES ('v2', 'v2', 'v2-c', 'v2-d');
+INSERT INTO stream_a VALUES ('v2', 'v2');
+INSERT INTO stream_a VALUES ('v3', 'v3');
+INSERT INTO stream_b VALUES ('v4', 'v4', 'v4-c', 'v4-d');
 INSERT INTO stream_b VALUES ('v5', 'v5', 'v5-c', 'v5-d');
+INSERT INTO stream_a VALUES ('v5', 'v5');
 INSERT INTO stream_a VALUES ('v6', 'v6');
 INSERT INTO stream_a VALUES ('v7', 'v7');
 INSERT INTO stream_b VALUES ('v6', 'v6', 'v6-c', 'v6-d');
