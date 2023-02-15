@@ -3,6 +3,7 @@ Some sample queries with ksqlDB
 
 * [Ktable to get the latest value based on another field timestamp](ktable-store-latest-value-by-time.sql)
 * [Get stream with enriched data from another stream](enriched-data-from-another-stream.sql)
+* [Merge three streams based in a common field](three-streams-enriched-table.sql)
 
 
 ## How to run
