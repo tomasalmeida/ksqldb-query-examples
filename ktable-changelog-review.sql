@@ -48,14 +48,29 @@ CREATE STREAM stream2_input(
  partitions=1
 );
 
+
+-- this stream generates a state store with all values from table_input (value 1 to 4)
 CREATE STREAM stream_final AS
   SELECT 
     t.id,
+    CONCAT(CONCAT(CAST(t.id AS STRING), '-'), s.value5) _key,
     t.value1,
-    i.value5
-  FROM stream2_input i
+    s.value5
+  FROM stream2_input s
     LEFT JOIN table_input t
-      ON i.id = t.id
-  WHERE t.id > 0;
+      ON s.id = t.id
+    PARTITION BY CONCAT(CONCAT(CAST(t.id AS STRING), '-'), s.value5)
+;
+
+-- this stream generates ANOTHER state store with all values from table_input (value 1 to 4)
+CREATE STREAM stream2_final AS
+  SELECT 
+    t.id,
+    t.value1,
+    s.value5
+  FROM stream2_input s
+    LEFT JOIN table_input t
+      ON s.id = t.id
+;
 
 INSERT INTO stream2_input VALUES (5, 'val5');
