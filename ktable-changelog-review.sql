@@ -70,7 +70,8 @@ CREATE STREAM stream2_final AS
     s.value5
   FROM stream2_input s
     LEFT JOIN table_input t
-      ON s.id = t.id
-;
+      ON s.id = t.id;
 
 INSERT INTO stream2_input VALUES (5, 'val5');
+
+
