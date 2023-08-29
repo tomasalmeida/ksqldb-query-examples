@@ -75,3 +75,12 @@ CREATE STREAM stream2_final AS
 INSERT INTO stream2_input VALUES (5, 'val5');
 
 
+-- check the topologies
+EXPLAIN CSAS_STREAM_FINAL_7;
+EXPLAIN CSAS_STREAM2_FINAL_9;
+
+-- check the topology at https://zz85.github.io/kafka-streams-viz/
+-- going to Control Center at localhost:9021
+-- you can see the topics
+-- - _confluent-ksql-ksql-clusterquery_CSAS_STREAM_FINAL_7-KafkaTopic_Right-Reduce-changelog
+-- - _confluent-ksql-ksql-clusterquery_CSAS_STREAM2_FINAL_9-KafkaTopic_Right-Reduce-changelog
